@@ -2,25 +2,21 @@ import streamlit as st
 import yagmail
 import urllib.parse
 import random
-import requests
 
 # --- CONFIGURARE SERVER ---
 EMAIL_SISTEM = "ciolac.roxana.irina@gmail.com"
 PAROLA_SISTEM = "lphxidawqbukpmuk"
 
-# Funcție pentru a lua un GIF stabil
-def get_funny_cooking_gif():
-    keywords = ["cooking cartoon", "cooking anime", "cooking food", "funny cooking", "chef"]
-    tag = random.choice(keywords)
-    # API Key public GIPHY
-    url = f"https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag={urllib.parse.quote(tag)}&rating=g"
-    try:
-        response = requests.get(url).json()
-        gif_id = response['data']['id']
-        # Folosim i.giphy.com pentru stabilitate maximă
-        return f"https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/{gif_id}/giphy.gif"
-    except:
-        return "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/demgpwJ6ZeDSM/giphy.gif"
+# Listă de GIF-uri Tenor verificate (Cooking Anime/Cartoon)
+GIFS_GATIT = [
+    "https://media.tenor.com/On7_28SFrL0AAAAC/anime-cooking.gif",
+    "https://media.tenor.com/vA9XmN0I_XAAAAAC/cooking-anime.gif",
+    "https://media.tenor.com/97S9D97-Y68AAAAC/ratatouille-cooking.gif",
+    "https://media.tenor.com/UInS93V8m_MAAAAC/spongebob-cooking.gif",
+    "https://media.tenor.com/93pXpM8Uf_cAAAAC/pompompurin-cooking.gif"
+]
+
+GIF_SUCCES = "https://media.tenor.com/00_T80Yh8mYAAAAC/excited-dance.gif"
 
 def trimite_mail(destinatar, subiect, continut):
     try:
@@ -38,8 +34,8 @@ if "de_la" in params:
     # --- VIZUALIZARE RESPONDENT ---
     nume_exp = params.get("nume_exp", "Cineva drag")
     
-    # Afișăm GIF-ul random
-    st.image(get_funny_cooking_gif(), use_container_width=True)
+    # Afișăm un GIF random din lista noastră sigură
+    st.image(random.choice(GIFS_GATIT), use_container_width=True)
     
     st.title(f"🥘 {nume_exp} te întreabă: Ce mâncăm?")
     
@@ -59,18 +55,18 @@ if "de_la" in params:
         if trimite_mail(params["de_la"], "Avem un câștigător! 🏆", msg_text):
             st.balloons()
             st.success("Notificarea a plecat!")
-            st.image("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/artj92VpL0XG8/giphy.gif")
+            st.image(GIF_SUCCES, caption="Yeeey! Poftă bună!")
 else:
     # --- VIZUALIZARE CREATOR ---
     st.title("📝 Planificator de Cină Universal")
     
     with st.expander("👤 Datele tale", expanded=True):
-        nume_meu = st.text_input("Numele tău *", placeholder="Ex: Irina")
-        email_meu = st.text_input("E-mailul tău *", placeholder="Ex: adresa@gmail.com")
+        nume_meu = st.text_input("Numele tău *", placeholder="Irina")
+        email_meu = st.text_input("E-mailul tău *", placeholder="ciolac.roxana.irina@gmail.com")
         
     with st.expander("👨‍👩‍ Partenerul", expanded=True):
-        nume_el = st.text_input("Numele respondentului", placeholder="Ex: Florin")
-        email_el = st.text_input("E-mail respondent (opțional)")
+        nume_el = st.text_input("Numele respondentului", placeholder="Florin")
+        email_el = st.text_input("E-mail respondent (pentru trimitere directă)")
 
     st.subheader("🍴 Ce propuneri ai?")
     if 'n_opt' not in st.session_state: st.session_state.n_opt = 2
