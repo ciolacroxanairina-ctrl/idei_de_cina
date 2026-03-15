@@ -2,26 +2,24 @@ import streamlit as st
 import yagmail
 import urllib.parse
 import random
+import requests
 
-# --- CONFIGURARE SERVER (Poștașul aplicației) ---
+# --- CONFIGURARE SERVER ---
 EMAIL_SISTEM = "ciolac.roxana.irina@gmail.com"
 PAROLA_SISTEM = "lphxidawqbukpmuk"
 
-# --- REZURSE VIZUALE ---
-gif_cooking = [
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/demgpwJ6ZeDSM/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/12uXi1GXBibzp6/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKVUn7iM8FMEU24/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l46C6z7vYdvZ7GXT2/giphy.gif"
-]
-
-mesaje_funny = [
-    "Decizia grea a fost luată: **{alegere}**! Să înceapă Jocurile Foamei! 🔥",
-    "Victorie! S-a ales **{alegere}**. Sperăm că bucătarul e binedispus! 👨‍🍳",
-    "Habemus Papam! Adică avem meniu: **{alegere}**. Să vină farfuriile! 🍽️",
-    "Zarurile au fost aruncate! Diseară avem **{alegere}**. Poftă bună! 🥂",
-    "Alertă de deliciu! **{alegere}** a câștigat bătălia papilelor gustative! 🏆"
-]
+# Funcție pentru a lua un GIF random de pe GIPHY bazat pe cuvinte cheie
+def get_random_cooking_gif():
+    keywords = ["cooking anime", "cooking cartoon", "cooking food", "cooking time", "funny cooking"]
+    tag = random.choice(keywords)
+    # Folosim un API key public de test de la GIPHY (funcționează pentru proiecte mici)
+    url = f"https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag={urllib.parse.quote(tag)}&rating=g"
+    try:
+        data = requests.get(url).json()
+        return data['data']['images']['original']['url']
+    except:
+        # Imagine de rezervă în caz că API-ul nu răspunde
+        return "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/demgpwJ6ZeDSM/giphy.gif"
 
 def trimite_mail(destinatar, subiect, continut):
     try:
@@ -36,9 +34,12 @@ st.set_page_config(page_title="Dinner Picker", page_icon="🍕")
 params = st.query_params
 
 if "de_la" in params:
-    # --- INTERFAȚĂ RESPONDENT (Partenerul) ---
+    # --- VIZUALIZARE RESPONDENT ---
     nume_exp = params.get("nume_exp", "Cineva drag")
-    st.image(random.choice(gif_cooking))
+    
+    # Afișăm GIF-ul random de gatit
+    st.image(get_random_cooking_gif(), use_container_width=True)
+    
     st.title(f"🥘 {nume_exp} te întreabă: Ce mâncăm?")
     
     optiuni = params["opt"].split(",")
@@ -46,30 +47,32 @@ if "de_la" in params:
     comentariu = st.text_input("Vrei să adaugi un mesaj/dorință? (ex: 'Vreau și desert!')")
     
     if st.button("Confirmă Alegerea 🚀"):
-        msg_text = random.choice(mesaje_funny).format(alegere=alegere)
-        if comentariu:
-            msg_text += f"\n\nPS: {comentariu}"
+        mesaje_funny = [
+            f"Decizia grea a fost luată: **{alegere}**! Să înceapă Jocurile Foamei! 🔥",
+            f"Victorie! S-a ales **{alegere}**. Sperăm că bucătarul e binedispus! 👨‍🍳",
+            f"Habemus Papam! Avem meniu: **{alegere}**. Să vină farfuriile! 🍽️"
+        ]
+        msg_text = random.choice(mesaje_funny)
+        if comentariu: msg_text += f"<br><br><b>Mesaj extra:</b> {comentariu}"
         
-        # Trimitem mail către cel care a generat link-ul
-        if trimite_mail(params["de_la"], "Avem un câștigător! 🏆", msg_text):
+        # Trimitem mail
+        if trimite_mail(params["de_la"], "Decizia a fost luată! 🍴", msg_text):
             st.balloons()
             st.success("Notificarea a plecat!")
-            st.info(msg_text)
             st.image("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5bmZ6eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/artj92VpL0XG8/giphy.gif")
 else:
-    # --- INTERFAȚĂ CREATOR (Oricine vrea să gătească) ---
+    # --- VIZUALIZARE CREATOR ---
     st.title("📝 Planificator de Cină Universal")
-    st.write("Creează-ți propriul meniu și lasă partenerul să decidă!")
     
     with st.expander("👤 Datele tale", expanded=True):
-        nume_meu = st.text_input("Numele tău *", placeholder="Ex: Irina")
-        email_meu = st.text_input("E-mailul tău *", placeholder="Ex: adresa@gmail.com")
+        nume_meu = st.text_input("Numele tău *", placeholder="Irina")
+        email_meu = st.text_input("E-mailul tău *", placeholder="ciolac.roxana.irina@gmail.com")
         
     with st.expander("👨‍👩‍ Partenerul", expanded=True):
-        nume_el = st.text_input("Numele partenerului", placeholder="Ex: Florin")
-        email_el = st.text_input("E-mail partener (opțional pentru trimitere directă)")
+        nume_el = st.text_input("Numele respondentului", placeholder="Florin")
+        email_el = st.text_input("E-mail respondent (pentru trimitere directă)")
 
-    st.subheader("🍴 Opțiuni Meniu")
+    st.subheader("🍴 Ce propuneri ai?")
     if 'n_opt' not in st.session_state: st.session_state.n_opt = 2
 
     optiuni_list = []
@@ -85,7 +88,8 @@ else:
     
     # Construire Link
     opt_str = ",".join(optiuni_list)
-    base_url = "https://idei-de-cina.streamlit.app/" # Asigură-te că e linkul tău corect!
+    # !!! SCHIMBĂ ACEST LINK CU LINK-UL TĂU REAL DUPĂ DEPLOY !!!
+    base_url = "https://idei-de-cina.streamlit.app/" 
     link_params = {"de_la": email_meu, "opt": opt_str, "nume_exp": nume_meu}
     link_final = f"{base_url}?{urllib.parse.urlencode(link_params)}"
 
@@ -94,14 +98,12 @@ else:
         if st.button("🔗 Generează Link"):
             if email_meu and nume_meu and optiuni_list:
                 st.code(link_final)
-            else: st.error("Completează câmpurile marcate cu *!")
+            else: st.error("Completează numele, mailul și măcar o opțiune!")
 
     with col2:
         if st.button("📧 Trimite pe Mail"):
             if not email_el:
                 st.warning("⚠️ Introdu e-mailul respondentului!")
-            elif not email_meu:
-                st.error("Introdu e-mailul tău mai întâi!")
             else:
                 sub = f"Mesaj special de la {nume_meu} ❤️"
                 corp = f"Bună {nume_el}! {nume_meu} te întreabă ce mâncați diseară. Alege aici: {link_final}"
