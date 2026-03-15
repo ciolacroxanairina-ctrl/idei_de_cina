@@ -4,11 +4,10 @@ import urllib.parse
 import random
 
 # --- CONFIGURARE SERVER ---
-# Acesta rămâne "poștașul" aplicației
 EMAIL_SISTEM = "ciolac.roxana.irina@gmail.com"
 PAROLA_SISTEM = "lphxidawqbukpmuk"
 
-# TOATE GIF-URILE TALE (48 de variante)
+# COLECTIE GIFS (Păstrată pentru prima pagină)
 COLECTIE_GIFS = [
     "https://media.giphy.com/media/XIBQ0Bz51uRnlsj77Y/giphy.gif", "https://media.giphy.com/media/LWiwqFwaR2RgzRauBj/giphy.gif",
     "https://media.giphy.com/media/hbJtVo1FCArG2MDBmi/giphy.gif", "https://media.giphy.com/media/ZofRdFOAb22IbXz0ry/giphy.gif",
@@ -37,8 +36,6 @@ COLECTIE_GIFS = [
     "https://media.giphy.com/media/vXIjTvGT6xKT46RPjw/giphy.gif"
 ]
 
-GIF_SUCCES = "https://media.giphy.com/media/artj92VpL0XG8/giphy.gif"
-
 def trimite_mail(destinatar, subiect, continut):
     try:
         yag = yagmail.SMTP(EMAIL_SISTEM, PAROLA_SISTEM)
@@ -46,45 +43,58 @@ def trimite_mail(destinatar, subiect, continut):
         return True
     except: return False
 
-# --- UI ---
 st.set_page_config(page_title="Dinner Roulette", page_icon="🍕")
-
 p = st.query_params
 
 if "de_la" in p:
     # --- VIZUALIZARE RESPONDENT ---
     nume_exp = p.get("nume_exp", "Cineva drag")
-    st.image(random.choice(COLECTIE_GIFS), use_container_width=True)
-    st.title(f"🥘 {nume_exp} vrea să pregătească cina!")
-    
-    optiuni = p["opt"].split(",")
-    alegere = st.radio("Ce îți dorește stomacul azi?", optiuni)
-    comentariu = st.text_input("Un mesaj extra? (ex: 'Vreau și ceva dulce!')")
-    
-    if st.button("Confirmă Alegerea 🚀"):
-        mesaje = [
-            f"Decizia a fost luată: **{alegere}**! Să înceapă Jocurile Foamei! 🔥",
-            f"Victorie! S-a ales **{alegere}**. Sperăm că bucătarul e binedispus! 👨‍🍳",
-            f"Habemus Papam! Avem meniu: **{alegere}**. Să vină farfuriile! 🍽️"
-        ]
-        msg = random.choice(mesaje)
-        if comentariu: msg += f"<br><br><b>Mesaj extra de la el:</b> {comentariu}"
+    mesaj_invitatie = p.get("msg", "") # Mesajul suplimentar din link
+
+    if "trimis" not in st.session_state:
+        st.image(random.choice(COLECTIE_GIFS), use_container_width=True)
+        st.title(f"🥘 {nume_exp} vrea să pregătească cina!")
         
-        if trimite_mail(p["de_la"], "Avem un câștigător! 🏆", msg):
-            st.balloons()
-            st.success("Alegerea a plecat spre ea!")
-            st.image(GIF_SUCCES)
+        # Afișăm mesajul de la creator dacă există
+        if mesaj_invitatie:
+            st.chat_message("assistant").write(f"**Mesaj de la {nume_exp}:** {mesaj_invitatie}")
+
+        optiuni = p["opt"].split(",")
+        alegere = st.radio("Ce îți dorește stomacul azi?", optiuni)
+        comentariu = st.text_input("Un mesaj extra pentru ea? (ex: 'Vreau și ceva dulce!')")
+        
+        if st.button("Confirmă Alegerea 🚀"):
+            mesaje_funny = [
+                f"Decizia grea a fost luată: **{alegere}**! Să înceapă Jocurile Foamei! 🔥",
+                f"Victorie! S-a ales **{alegere}**. Sperăm că bucătarul e binedispus! 👨‍🍳",
+                f"Habemus Papam! Avem meniu: **{alegere}**. Să vină farfuriile! 🍽️"
+            ]
+            msg = random.choice(mesaje_funny)
+            if comentariu: msg += f"<br><br><b>Mesaj extra de la el:</b> {comentariu}"
+            
+            if trimite_mail(p["de_la"], "Avem un câștigător! 🏆", msg):
+                st.session_state.trimis = True
+                st.session_state.mesaj_final = msg
+                st.rerun()
+    else:
+        st.balloons()
+        st.success("✅ Alegerea a plecat spre ea! Poți închide această pagină.")
+        st.info(st.session_state.mesaj_final.replace("<br>", "\n"))
+        st.markdown("### Poftă bună! ✨")
+
 else:
     # --- VIZUALIZARE CREATOR ---
     st.title("📝 Planificator de Cină Universal")
-    st.write("Creează-ți linkul personalizat și lasă-l pe el să aleagă!")
     
     with st.expander("👤 Datele tale", expanded=True):
-        nume_meu = st.text_input("Numele tău *", placeholder="Ex: Irina")
-        email_meu = st.text_input("E-mailul tău *", placeholder="Ex: adresa@gmail.com")
-        
+        nume_meu = st.text_input("Numele tău *", placeholder="Irina")
+        email_meu = st.text_input("E-mailul tău *", placeholder="ciolac.roxana.irina@gmail.com")
+    
+    # NOU: Mesajul tău suplimentar
+    mesaj_suplimentar = st.text_area("Mesaj pentru el (opțional)", placeholder="Ex: Alege cu grijă, că mi-e tare foame! ❤️")
+
     with st.expander("👩‍❤️‍👨 Partenerul", expanded=True):
-        nume_el = st.text_input("Nume respondent", placeholder="Ex: Florin")
+        nume_el = st.text_input("Nume respondent", placeholder="Florin")
         email_el = st.text_input("E-mail respondent (opțional)")
 
     st.subheader("🍴 Opțiuni Meniu")
@@ -95,17 +105,18 @@ else:
         val = st.text_input(f"Opțiunea {i+1}", key=f"o_{i}")
         if val: optiuni_list.append(val)
 
-    if st.button("➕ Adaugă alt fel de mâncare"):
+    if st.button("➕ Mai am o idee!"):
         st.session_state.n_opt += 1
         st.rerun()
 
     st.divider()
     
-    # Construire Link
     opt_str = ",".join(optiuni_list)
     base_url = "https://idei-de-cina.streamlit.app/" 
-    link_params = {"de_la": email_meu, "opt": opt_str, "nume_exp": nume_meu}
-    link_final = f"{base_url}?{urllib.parse.urlencode(link_params)}"
+    
+    # Adăugăm și mesajul tău în parametrii link-ului
+    lp = {"de_la": email_meu, "opt": opt_str, "nume_exp": nume_meu, "msg": mesaj_suplimentar}
+    link_final = f"{base_url}?{urllib.parse.urlencode(lp)}"
 
     col1, col2 = st.columns(2)
     with col1:
@@ -118,5 +129,6 @@ else:
             if not email_el: st.warning("⚠️ Introdu e-mailul respondentului!")
             else:
                 sub = f"Mesaj special de la {nume_meu} ❤️"
-                corp = f"Bună {nume_el}! {nume_meu} te întreabă ce mâncați diseară. Alege aici: {link_final}"
+                # Adăugăm mesajul tău și în mail-ul direct dacă alegi varianta asta
+                corp = f"Bună {nume_el}! {nume_meu} te întreabă ce mâncați diseară.\n\nMesaj: {mesaj_suplimentar}\n\nAlege aici: {link_final}"
                 if trimite_mail(email_el, sub, corp): st.success("Mail-ul a plecat!")
