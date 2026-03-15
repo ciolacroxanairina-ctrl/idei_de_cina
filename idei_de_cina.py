@@ -87,15 +87,15 @@ else:
     st.title("📝 Planificator de Cină Universal")
     
     with st.expander("👤 Datele tale", expanded=True):
-        nume_meu = st.text_input("Numele tău *", placeholder="Irina")
-        email_meu = st.text_input("E-mailul tău *", placeholder="adresa.ta@gmail.com")
+        nume_meu = st.text_input("📝Numele tău *", placeholder="Irina")
+        email_meu = st.text_input("📧E-mailul tău *", placeholder="adresa.ta@gmail.com")
     
     # NOU: Mesajul tău suplimentar
-    mesaj_suplimentar = st.text_area("Mesaj pentru partener (opțional)", placeholder="Ex: Alege cu grijă, că mi-e tare foame! ❤️")
+    mesaj_suplimentar = st.text_area("💬Mesaj pentru partener (opțional)", placeholder="Ex: Alege cu grijă, că mi-e tare foame! ❤️")
 
     with st.expander("👩‍❤️‍👨 Partenerul", expanded=True):
-        nume_el = st.text_input("Nume respondent", placeholder="Florin")
-        email_el = st.text_input("E-mail respondent (opțional)")
+        nume_el = st.text_input("✍🏻Nume respondent", placeholder="Florin")
+        email_el = st.text_input("💌E-mail respondent (opțional)")
 
     st.subheader("🍴 Opțiuni Meniu")
     if 'n_opt' not in st.session_state: st.session_state.n_opt = 2
