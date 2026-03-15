@@ -60,8 +60,8 @@ if "de_la" in p:
             st.chat_message("assistant").write(f"**Mesaj de la {nume_exp}:** {mesaj_invitatie}")
 
         optiuni = p["opt"].split(",")
-        alegere = st.radio("Ce îți dorește stomacul azi?", optiuni)
-        comentariu = st.text_input("Un mesaj extra pentru ea? (ex: 'Vreau și ceva dulce!')")
+        alegere = st.radio("Ce îți dorește stomacul azi 😋?", optiuni)
+        comentariu = st.text_input("Un mesaj extra pentru {nume_exp}? (ex: 'Vreau și ceva dulce 🍰!')")
         
         if st.button("Confirmă Alegerea 🚀"):
             mesaje_funny = [
@@ -88,10 +88,10 @@ else:
     
     with st.expander("👤 Datele tale", expanded=True):
         nume_meu = st.text_input("Numele tău *", placeholder="Irina")
-        email_meu = st.text_input("E-mailul tău *", placeholder="ciolac.roxana.irina@gmail.com")
+        email_meu = st.text_input("E-mailul tău *", placeholder="adresa.ta@gmail.com")
     
     # NOU: Mesajul tău suplimentar
-    mesaj_suplimentar = st.text_area("Mesaj pentru el (opțional)", placeholder="Ex: Alege cu grijă, că mi-e tare foame! ❤️")
+    mesaj_suplimentar = st.text_area("Mesaj pentru partener (opțional)", placeholder="Ex: Alege cu grijă, că mi-e tare foame! ❤️")
 
     with st.expander("👩‍❤️‍👨 Partenerul", expanded=True):
         nume_el = st.text_input("Nume respondent", placeholder="Florin")
@@ -102,7 +102,7 @@ else:
 
     optiuni_list = []
     for i in range(st.session_state.n_opt):
-        val = st.text_input(f"Opțiunea {i+1}", key=f"o_{i}")
+        val = st.text_input(f"🥣Opțiunea {i+1}", key=f"o_{i}")
         if val: optiuni_list.append(val)
 
     if st.button("➕ Mai am o idee!"):
