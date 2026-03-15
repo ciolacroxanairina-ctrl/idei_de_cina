@@ -84,7 +84,7 @@ if "de_la" in p:
 
 else:
     # --- VIZUALIZARE CREATOR ---
-    st.title("📝 Planificator de Cină Universal")
+    st.title("📝 Planificator de Cină")
     
     with st.expander("👤 Datele tale", expanded=True):
         nume_meu = st.text_input("📝Numele tău *", placeholder="Irina")
