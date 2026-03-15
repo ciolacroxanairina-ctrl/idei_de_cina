@@ -2,78 +2,65 @@ import streamlit as st
 import yagmail
 import urllib.parse
 
-# --- CONFIGURARE SERVER EMAIL (Sistemul aplicației) ---
-# Aici trebuie să rămână e-mailul tău DOAR ca "expeditor" (serverul care trimite)
+# --- CONFIGURARE SISTEM ---
+# Pune aici parola galbenă de 16 caractere (fără spații)
 EMAIL_SISTEM = "ciolac.roxana.irina@gmail.com"
-PAROLA_SISTEM = "parola_ta_de_16_caractere"  # Parola de aplicație Google
+PAROLA_SISTEM = "lphxidawqbukpmuk" 
 
-
-def trimite_notificare(destinatar_notificare, alegere, nume_sot):
+def trimite_notificare(destinatar, alegere):
     try:
         yag = yagmail.SMTP(EMAIL_SISTEM, PAROLA_SISTEM)
-        subiect = f"Decizie luată! {alegere} 🥘"
-        mesaj = f"Bună! Soțul tău ({nume_sot}) a ales pentru diseară: {alegere}. Poftă bună!"
-
-        yag.send(to=destinatar_notificare, subject=subiect, contents=mesaj)
+        yag.send(
+            to=destinatar,
+            subject="Decizie Cină! 🥘",
+            contents=f"Veste bună! S-a făcut alegerea: {alegere}. Spor la gătit! ❤️"
+        )
         return True
     except Exception as e:
+        st.error(f"Eroare tehnică la mail: {e}")
         return False
 
-
-# --- LOGICA INTERFEȚEI ---
+# --- LOGICA APLICATIEI ---
 query_params = st.query_params
 
-# Verificăm dacă cineva a intrat pe un link de respondent
 if "de_la" in query_params:
-    st.title("Alege pentru soția ta! ❤️")
-
+    # --- CE VEDE SOȚUL ---
+    st.title("Ce mâncăm diseară? 👩‍🍳")
     email_sotie = query_params["de_la"]
     optiuni = query_params["opt"].split(",")
-    nume_sot = query_params.get("nume", "Soțul tău")
-
-    st.write(f"Salut! Soția ta ți-a trimis aceste variante. Ce alegi?")
-    alegere = st.radio("Meniul de azi:", optiuni)
-
-    if st.button("Trimite alegerea! 🚀"):
-        with st.spinner("Se trimite notificarea..."):
-            if trimite_notificare(email_sotie, alegere, nume_sot):
-                st.balloons()
-                st.success("Gata! Ea a primit un e-mail cu alegerea ta.")
-            else:
-                st.error("A apărut o eroare la trimiterea e-mailului.")
-
+    
+    st.write("Alege una dintre variantele de mai jos:")
+    alegere = st.radio("Opțiuni:", optiuni)
+    
+    if st.button("Confirmă alegerea! 🚀"):
+        if trimite_notificare(email_sotie, alegere):
+            st.balloons()
+            st.success("Gata! I-am trimis un mail soției tale.")
 else:
-    # INTERFAȚA PENTRU ORICINE VREA SĂ GENEREZE UN LINK
-    st.title("Planificator de Cină Universal 🍕")
-    st.write("Completează datele de mai jos pentru a genera link-ul tău personalizat.")
+    # --- CE VEZI TU ---
+    st.title("Generator de Meniu 📝")
+    email_tau = st.text_input("E-mailul tău pentru notificări", value="ciolac.roxana.irina@gmail.com")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        opt1 = st.text_input("Varianta 1", "Paste")
+        opt2 = st.text_input("Varianta 2", "Pizza")
+    with col2:
+        opt3 = st.text_input("Varianta 3", "Salată")
+        opt4 = st.text_input("Varianta 4", "Comandăm ceva")
 
-    with st.expander("1. Datele tale (Cea care gătește/comandă)", expanded=True):
-        email_tau = st.text_input("E-mailul tău (unde primești răspunsul)")
-        nume_partener = st.text_input("Numele partenerului (opțional)")
-
-    with st.expander("2. Opțiunile de cină", expanded=True):
-        opt1 = st.text_input("Varianta A", "Sushi")
-        opt2 = st.text_input("Varianta B", "Paste")
-        opt3 = st.text_input("Varianta C", "Pizza")
-
-    if st.button("Generează link-ul pentru el"):
-        if not email_tau:
-            st.warning("Te rugăm să introduci adresa ta de e-mail!")
-        else:
-            # Construim lista de opțiuni
-            lista = [opt1, opt2, opt3]
-            opt_str = ",".join([o for o in lista if o.strip()])
-
-            # Link-ul tău public (după ce îl urci pe Streamlit Cloud)
-            base_url = "https://cina-noastra.streamlit.app/"
-
-            # Parametrii care "cară" informația în link
-            params = {
-                "de_la": email_tau,
-                "opt": opt_str,
-                "nume": nume_partener
-            }
+    if st.button("Generează link pentru soț"):
+        if email_tau:
+            toate = [opt1, opt2, opt3, opt4]
+            opt_str = ",".join([o for o in toate if o.strip()])
+            
+            # ATENȚIE: Aici pune link-ul tău de Streamlit după ce e live
+            base_url = "https://idei-de-cina.streamlit.app/" 
+            
+            params = {"de_la": email_tau, "opt": opt_str}
             link_final = f"{base_url}?{urllib.parse.urlencode(params)}"
-
-            st.success("Link-ul a fost generat! Copiază-l și trimite-l pe WhatsApp:")
+            
+            st.success("Copiază link-ul de mai jos și trimite-l pe WhatsApp:")
             st.code(link_final)
+        else:
+            st.warning("Te rog pune e-mailul tău mai sus.")
