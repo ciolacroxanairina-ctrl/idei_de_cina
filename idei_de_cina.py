@@ -46,7 +46,7 @@ if "de_la" in query_params:
     st.title(f"🥘 Ce {titlu_gen} {nume_exp} diseară?")
     optiuni = query_params["opt"].split(",")
     
-    alegere = st.radio("Alege varianta care îți face cel mai mult cu brioșă:", optiuni)
+    alegere = st.radio("Alege varianta care îți face cel mai mult cu ochiul:", optiuni)
     
     if st.button("Confirmă Alegerea 🚀"):
         msg = random.choice(mesaje_funny).format(alegere=alegere)
