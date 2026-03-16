@@ -1,2 +1,3 @@
 streamlit
 yagmail
+supabase
