@@ -84,7 +84,7 @@ else:
         except: st.write("Încă nu avem istoric salvat.")
 
     nume_meu = st.text_input("Numele tău", "Irina")
-    email_meu = st.text_input("E-mailul tău", "ciolac.roxana.irina@gmail.com")
+    email_meu = st.text_input("E-mailul tău", "adresa.ta@gmail.com")
     
     if 'n_opt' not in st.session_state: st.session_state.n_opt = 2
     
